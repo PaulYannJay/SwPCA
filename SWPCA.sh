@@ -20,7 +20,7 @@ while [ $# -gt 0 ] ; do
 -w/--window \t the window size to use for sliding window
 Optional: 
 -s/--sample \t set of samples to analyse. If not defined, all sample are used
--r/--region \t set of regions to analyse. If not defined, all regions are analysed " >&2;exit 1;; 
+-r/--region \t set of regions to analyse in format : Scaffold\tDebut\tFin. If not defined, all regions are analysed " >&2;exit 1;; 
   esac
   shift
 done
@@ -30,5 +30,24 @@ if [ -z "$OUT" ] || [ -z "$VCF"] || [ -z "$Wind"]; then
   exit 2
 fi
 
+SEQ=$VCF
+
 echo -e "\n"
 
+mkdir $OUT
+
+if [ -n "$r"] && [ -n "$o"]; then
+bcftools view -R $Scaf -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+tabix -p vcf $OUT/FilteredDataset.vcf.gz
+SEQ=$OUT/FilteredDataset.vcf.gz
+elif [ -n "$r"] && [ -z "$o"] ; then
+bcftools view -R $Scaf -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+tabix -p vcf $OUT/FilteredDataset.vcf.gz
+SEQ=$OUT/FilteredDataset.vcf.gz
+elif [ -z "$r"] && [ -n "$o"] ; then
+bcftools view -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+tabix -p vcf $OUT/FilteredDataset.vcf.gz
+SEQ=$OUT/FilteredDataset.vcf.gzfi 
+else
+tabix -p vcf $OUT
+fi
