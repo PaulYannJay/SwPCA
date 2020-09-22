@@ -57,3 +57,15 @@ else
 	echo -e "Not filtering the vcf : no region and sample file defined "
 	tabix -p vcf $SEQ 
 fi
+
+if [ -z "$Scaf" ]; then
+	bcftools query -f '%CHROM %POS\n' $SEQ > Position.rm
+	./ExtractInterval.pl -i Position.rm -o AllRegion.rm
+	$Scaf=AllRegion.rm
+fi
+	
+while read line ; do 
+	deb=`cut -c2 $line`
+	echo $deb
+done < $Scaf
+
