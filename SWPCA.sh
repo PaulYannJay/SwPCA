@@ -25,9 +25,9 @@ Optional:
   shift
 done
 
-if [ -z "$OUT" ] || [ -z "$VCF"] || [ -z "$Wind"]; then
-  echo >&2 "Fatal error: Ouput, vcf or Window size are not defined"
-  exit 2
+if [ -z "$OUT" ] || [ -z "$VCF" ] || [ -z "$Wind" ]; then
+	echo >&2 "Fatal error: Ouput, vcf or Window size are not defined"
+exit 2
 fi
 
 SEQ=$VCF
@@ -36,18 +36,24 @@ echo -e "\n"
 
 mkdir $OUT
 
-if [ -n "$r"] && [ -n "$o"]; then
-bcftools view -R $Scaf -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
-tabix -p vcf $OUT/FilteredDataset.vcf.gz
-SEQ=$OUT/FilteredDataset.vcf.gz
-elif [ -n "$r"] && [ -z "$o"] ; then
-bcftools view -R $Scaf -O z -o $OUT/FilteredDataset.vcf.gz $VCF
-tabix -p vcf $OUT/FilteredDataset.vcf.gz
-SEQ=$OUT/FilteredDataset.vcf.gz
-elif [ -z "$r"] && [ -n "$o"] ; then
-bcftools view -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
-tabix -p vcf $OUT/FilteredDataset.vcf.gz
-SEQ=$OUT/FilteredDataset.vcf.gzfi 
+if [ -n "$Scaf" ] && [ -n "$Sample" ]; then
+	echo -e "Filtering vcf file using only samples present in $Sample and regions present in $Scaf"
+	tabix -p vcf $SEQ 
+	bcftools view -R $Scaf -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+	tabix -p vcf $OUT/FilteredDataset.vcf.gz
+	SEQ=$OUT/FilteredDataset.vcf.gz
+elif [ -n "$Scaf" ] && [ -z "$Sample" ] ; then
+	echo -e "Filtering vcf file using only regions present in $Scaf"
+	tabix -p vcf $SEQ 
+	bcftools view -R $Scaf -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+	tabix -p vcf $OUT/FilteredDataset.vcf.gz
+	SEQ=$OUT/FilteredDataset.vcf.gz
+elif [ -z "$Scaf" ] && [ -n "$Sample" ] ; then
+	echo -e "Filtering vcf file using only samples present in $Sample"
+	bcftools view -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
+	tabix -p vcf $OUT/FilteredDataset.vcf.gz
+	SEQ=$OUT/FilteredDataset.vcf.gzfi 
 else
-tabix -p vcf $OUT
+	echo -e "Not filtering the vcf : no region and sample file defined "
+	tabix -p vcf $SEQ 
 fi
