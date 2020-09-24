@@ -64,6 +64,8 @@ if [ -z "$Scaf" ]; then
 	./ExtractInterval.pl -i Position.rm -o AllRegion.rm
 	Scaf="AllRegion.rm"
 fi
+
+[ -e $OUT.PCA.txt ] && rm $OUT.PCA.txt
 	
 while read line ; do 
 	stringarray=($line) #Put the content of $Scaf in a array, line by line
@@ -72,9 +74,10 @@ while read line ; do
 	fin=${stringarray[2]} #End position
 	nbWindow=$((($fin-$deb)/$Wind)) #Allow to compute the number of entire window
 	for i in `seq 1 $nbWindow`; do #For each window
-		bcftools view -r $Chr:$posdeb-$posfin -O z -o $OUT/$Chr:$posdeb-$posfin.FilteredDataset.vcf.gz $SEQ
 		posdeb=$(((($i-1)*$Wind)+1))		#Define start and end position
 		posfin=$(($i*$Wind))		
+		bcftools view -r $Chr:$posdeb-$posfin -O z -o $OUT/$Chr:$posdeb-$posfin.FilteredDataset.vcf.gz $SEQ
+		Rscript PCAsnpSA.R	$OUT/$Chr:$posdeb-$posfin.FilteredDataset.vcf.gz $Chr $posdeb $posfin $OUT.PCA.txt >/dev/null 2>&1 
 		echo "$Chr	$posdeb	$posfin"
 	done		
 done < $Scaf
