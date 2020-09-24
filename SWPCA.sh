@@ -1,5 +1,3 @@
-#
-#
 #!/bin/bash
 ##########
 ##
@@ -37,6 +35,7 @@ SEQ=$VCF
 echo -e "\n"
 
 mkdir $OUT
+echo "test"
 
 if [ -n "$Scaf" ] && [ -n "$Sample" ]; then # If Region and sample specified
 	echo -e "Filtering vcf file using only samples present in $Sample and regions present in $Scaf"
@@ -45,17 +44,17 @@ if [ -n "$Scaf" ] && [ -n "$Sample" ]; then # If Region and sample specified
 	tabix -p vcf $OUT/FilteredDataset.vcf.gz
 	SEQ=$OUT/FilteredDataset.vcf.gz
 elif [ -n "$Scaf" ] && [ -z "$Sample" ] ; then # If Region specified
-	echo -e "Filtering vcf file using only regions present in $Scaf"
+	echo -e "Filtering vcf file using only regions present in $Scaf "
 	tabix -p vcf $SEQ 
 	bcftools view -R $Scaf -O z -o $OUT/FilteredDataset.vcf.gz $VCF
 	tabix -p vcf $OUT/FilteredDataset.vcf.gz
 	SEQ=$OUT/FilteredDataset.vcf.gz
-elif [ -z "$Scaf" ] && [ -n "$Sample" ] ; then# If Sample specified
-	echo -e "Filtering vcf file using only samples present in $Sample"
+elif [ -z "$Scaf" ] && [ -n "$Sample" ] ; then # If Sample specified
+	echo -e "Filtering vcf file using only samples present in $Sample "
 	bcftools view -S $Sample -O z -o $OUT/FilteredDataset.vcf.gz $VCF
 	tabix -p vcf $OUT/FilteredDataset.vcf.gz
 	SEQ=$OUT/FilteredDataset.vcf.gz 
-else #If nothing specified
+else #If no sample and region specified
 	echo -e "Not filtering the vcf : no region and sample file defined "
 	tabix -p vcf $SEQ 
 fi
@@ -69,13 +68,13 @@ fi
 while read line ; do 
 	stringarray=($line) #Put the content of $Scaf in a array, line by line
 	Chr=${stringarray[0]} #Chromosome
-	deb=${stringarray[1]}#start positionn
+	deb=${stringarray[1]} #start positionn
 	fin=${stringarray[2]} #End position
 	nbWindow=$((($fin-$deb)/$Wind)) #Allow to compute the number of entire window
 	for i in `seq 1 $nbWindow`; do #For each window
+		bcftools view -r $Chr:$posdeb-$posfin -O z -o $OUT/$Chr:$posdeb-$posfin.FilteredDataset.vcf.gz $SEQ
 		posdeb=$(((($i-1)*$Wind)+1))		#Define start and end position
 		posfin=$(($i*$Wind))		
 		echo "$Chr	$posdeb	$posfin"
 	done		
 done < $Scaf
-
