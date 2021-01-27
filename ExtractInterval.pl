@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+### A code to extract the scaffold list, end and start from a vcf file
 use strict;
 use warnings;
 use Getopt::Std;

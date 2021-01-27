@@ -2,7 +2,7 @@
 ##########
 ##
 ##
-##	This workflow allow to create circos karyotype comparison plot based on the assembly
+##	This workflow allow to create data table table to produce the Sliding window PCA plot 
 ## 
 ##
 #######################################
@@ -10,8 +10,8 @@
 while [ $# -gt 0 ] ; do
   case $1 in
     -vcf ) VCF="$2" ;echo "the vcf file : $VCF" >&2;;
-    -s | --sample) Sample="$2" ;echo "the file containing sample to analyse is $Sample" >&2;;
-    -r | --region) Scaf="$2" ;echo "the file containing the scaffold and region to analyse is $Scaf" >&2;;
+    -s | --sample) Sample="$2" ;echo "the file containing the list of samples to analyse is $Sample" >&2;;
+    -r | --region) Scaf="$2" ;echo "the file containing the list of scaffolds and regions to analyse is $Scaf" >&2;;
     -o | --output) OUT="$2" ;echo "the output prefix is $OUT" >&2;;
     -w | --window) Wind="$2" ;echo "the window size is $Wind" >&2;;
 	-h | --help) echo -e "Option required:
@@ -26,7 +26,7 @@ Optional:
 done
 
 if [ -z "$OUT" ] || [ -z "$VCF" ] || [ -z "$Wind" ]; then
-	echo >&2 "Fatal error: Ouput, vcf or Window size are not defined"
+	echo >&2 "Fatal error: Ouput, Vcf or Window size are not defined"
 exit 2
 fi
 
@@ -35,7 +35,6 @@ SEQ=$VCF
 echo -e "\n"
 
 mkdir $OUT
-echo "test"
 
 if [ -n "$Scaf" ] && [ -n "$Sample" ]; then # If Region and sample specified
 	echo -e "Filtering vcf file using only samples present in $Sample and regions present in $Scaf"
@@ -59,7 +58,7 @@ else #If no sample and region specified
 	tabix -p vcf $SEQ 
 fi
 
-if [ -z "$Scaf" ]; then
+if [ -z "$Scaf" ]; then #If no region are specified, create a region file containing all positions !
 	bcftools query -f '%CHROM %POS\n' $SEQ > Position.rm
 	./ExtractInterval.pl -i Position.rm -o AllRegion.rm
 	Scaf="AllRegion.rm"
